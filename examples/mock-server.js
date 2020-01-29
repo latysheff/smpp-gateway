@@ -1,29 +1,33 @@
-require('dotenv').config({ path: '../.env' })
-
-const debug = require('debug')('sms:mock')
 const crypto = require('crypto')
 const smpp = require('smpp')
-const request = require('request')
 const { RateLimiter } = require('limiter')
 
 const {
-  SMS_HTTP_MESSAGING_GATEWAY_URL,
-  SMS_SMPP_SERVER_ADDRESS,
-  SMS_SMPP_SERVER_PORT,
-  SMS_SMPP_SYSTEM_ID,
-  SMS_SMPP_PASSWORD,
-  SMS_THROTTLE_COUNT,
-  SMS_THROTTLE_PERIOD
+  SMPP_SMPP_SERVER_ADDRESS,
+  SMPP_SMPP_SERVER_PORT,
+  SMPP_SYSTEM_ID,
+  SMPP_PASSWORD,
+  SMPP_THROTTLE_COUNT,
+  SMPP_THROTTLE_PERIOD
 } = process.env
 
-const limiter = new RateLimiter(+SMS_THROTTLE_COUNT, +SMS_THROTTLE_PERIOD, true)
+const config = {
+  address: SMPP_SMPP_SERVER_ADDRESS || '127.0.0.1',
+  port: SMPP_SMPP_SERVER_PORT || 2775,
+  throttle_count: SMPP_THROTTLE_COUNT || 10,
+  throttle_period: SMPP_THROTTLE_PERIOD || 60000,
+  system_id: SMPP_SYSTEM_ID || 'login',
+  password: SMPP_PASSWORD || 'password'
+}
 
-debug('mock started')
+console.log('config:', config)
+
+const limiter = new RateLimiter(config.throttle_count, config.throttle_period, true)
 
 async function task (fn) {
   return new Promise((resolve, reject) => {
     const remains = limiter.getTokensRemaining()
-    debug('tokens remaining', remains)
+    console.log('tokens remaining', remains)
 
     if (remains < 1) {
       reject(new Error('deny because no tokens remaining'))
@@ -32,7 +36,7 @@ async function task (fn) {
         if (err) {
           reject(new Error('limiter rejects, submitted more tasks that limit'))
         } else {
-          debug('limiter remaining tasks', remaining)
+          console.log('limiter remaining tasks', remaining)
           if (remaining < 0) {
             reject(new Error('limiter deny task'))
           } else {
@@ -46,7 +50,7 @@ async function task (fn) {
 }
 
 function checkAsyncUserPass (user, password, callback) {
-  if (user === SMS_SMPP_SYSTEM_ID && password === SMS_SMPP_PASSWORD) {
+  if (user === config.system_id && password === config.password) {
     callback()
   } else {
     callback(new Error('unauthorized'))
@@ -54,17 +58,17 @@ function checkAsyncUserPass (user, password, callback) {
 }
 
 const server = smpp.createServer((session) => {
-  debug('session %s:%d', session.socket.remoteAddress, session.socket.remotePort)
+  console.log('session %s:%d', session.socket.remoteAddress, session.socket.remotePort)
 
   session.on('error', (err) => {
-    debug('session error', err.message)
+    console.log('session error', err.message)
   })
 
   session.on('bind_transceiver', (pdu) => {
     session.pause()
     checkAsyncUserPass(pdu.system_id, pdu.password, (err) => {
       if (err) {
-        debug('wrong credentials', pdu.system_id, pdu.password)
+        console.log('wrong credentials: [%s]:[%s]', pdu.system_id, pdu.password)
 
         session.send(pdu.response({
           command_status: smpp.ESME_RBINDFAIL
@@ -78,7 +82,7 @@ const server = smpp.createServer((session) => {
         return
       }
 
-      debug('client [%s] is bound', pdu.system_id)
+      console.log('client [%s] is bound', pdu.system_id)
 
       session.send(pdu.response())
       session.resume()
@@ -94,14 +98,14 @@ const server = smpp.createServer((session) => {
   })
 
   session.on('submit_sm', async(pdu) => {
-    debug('received submit_sm %j', pdu)
+    console.log('received submit_sm %j', pdu)
 
     try {
       await task(() => {
         processSubmit(session, pdu)
       })
     } catch (e) {
-      debug('reject submit', e.message)
+      console.log('reject submit', e.message)
       session.send(pdu.response({
         command_status: smpp.ESME_RTHROTTLED
       }))
@@ -111,7 +115,7 @@ const server = smpp.createServer((session) => {
 
 function processSubmit (session, pdu) {
   // todo
-  // debug('registered_delivery', pdu.registered_delivery)
+  // console.log('registered_delivery', pdu.registered_delivery)
   // const ack = smpp.REGISTERED_DELIVERY.DELIVERY_ACKNOWLEDGEMENT
 
   const message = {
@@ -135,42 +139,14 @@ function processSubmit (session, pdu) {
     message.udh = pdu.short_message.udh.toString('hex')
   }
 
-  debug('POST %s with JSON payload %j', SMS_HTTP_MESSAGING_GATEWAY_URL, message)
-
-  if (!SMS_HTTP_MESSAGING_GATEWAY_URL) {
-    const smppResp = {
-      command_status: smpp.ESME_ROK,
-      message_id: crypto.randomBytes(8).toString('hex')
-    }
-    debug('sending mocked SMPP response %j', smppResp)
-    session.send(pdu.response(smppResp))
-
-    return
+  const smppResp = {
+    command_status: smpp.ESME_ROK,
+    message_id: crypto.randomBytes(8).toString('hex')
   }
-
-  request({
-    uri: SMS_HTTP_MESSAGING_GATEWAY_URL,
-    method: 'POST',
-    json: true,
-    body: message
-  }, (error, resp, body) => {
-    if (error) {
-      debug('received HTTP error', error)
-      session.send(pdu.response({
-        command_status: smpp.ESME_RSYSERR
-      }))
-    } else {
-      debug('received HTTP response %j', body)
-      const smppResp = {
-        command_status: smpp.ESME_ROK,
-        message_id: crypto.randomBytes(8).toString('hex')
-      }
-      debug('sending SMPP response %j', smppResp)
-      session.send(pdu.response(smppResp))
-    }
-  })
+  console.log('sending mock SMPP response %j', smppResp)
+  session.send(pdu.response(smppResp))
 }
 
-debug('SMPP server start on port', SMS_SMPP_SERVER_PORT, SMS_SMPP_SERVER_ADDRESS)
-server.listen(SMS_SMPP_SERVER_PORT, SMS_SMPP_SERVER_ADDRESS)
-// server.listen(12776)
+server.listen(config.port, config.address, () => {
+  console.log('mock SMPP server started on port', config.address, config.port)
+})

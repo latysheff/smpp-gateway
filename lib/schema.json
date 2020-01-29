@@ -1,0 +1,56 @@
+{
+  "additionalProperties": false,
+  "required": [
+    "destination",
+    "content"
+  ],
+  "type": "object",
+  "properties": {
+    "destination": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "encoding": {
+      "type": "string"
+    },
+    "udh": {
+      "type": "object",
+      "properties": {
+        "sms": {
+          "type": "object",
+          "properties": {
+            "ref": {
+              "type": "number"
+            },
+            "total": {
+              "type": "number"
+            },
+            "seq": {
+              "type": "number"
+            }
+          }
+        },
+        "port": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "dst": {
+                  "type": "number"
+                },
+                "src": {
+                  "type": "number"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
