@@ -15,6 +15,29 @@
     "encoding": {
       "type": "string"
     },
+    "pid": {
+      "type": "number"
+    },
+    "dcs": {
+      "type": "number"
+    },
+    "report": {
+      "type": "object",
+      "properties": {
+        "receipt": {
+          "type": "string"
+        },
+        "ack": {
+          "type": "boolean"
+        },
+        "user_ack": {
+          "type": "boolean"
+        },
+        "intermediate": {
+          "type": "boolean"
+        }
+      }
+    },
     "udh": {
       "type": "object",
       "properties": {

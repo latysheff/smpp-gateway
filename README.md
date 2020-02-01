@@ -8,7 +8,7 @@ It also contains Express routers for HTTP to SMPP gateway and Prometheus metrics
 
 ```
 const { ESME, gateway, metrics } = require('smpp-gateway')
-const config = {} // see examples/..
+const config = {} // see examples/client.js
 
 const esme = new ESME(config)
 
@@ -52,7 +52,7 @@ app.listen(3000)
 See also `lib/schema.json`
 
 ## Mock server
-`tests/mock.js`
+`examples/mock-server.js`
 
 Environment variables for mock server:
 ```

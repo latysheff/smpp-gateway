@@ -92,12 +92,14 @@ const server = smpp.createServer((session) => {
   session.on('unbind', (pdu) => { session.send(pdu.response()) })
 
   session.on('enquire_link', (pdu) => {
-    // if (count++ > 2)
-    //   session.pause()
-    session.send(pdu.response())
+    if (Math.random() < 0.8) {
+      session.send(pdu.response())
+    } else {
+      console.log('emulate enquire_link timeout')
+    }
   })
 
-  session.on('submit_sm', async(pdu) => {
+  session.on('submit_sm', async (pdu) => {
     console.log('received submit_sm %j', pdu)
 
     try {
@@ -110,6 +112,10 @@ const server = smpp.createServer((session) => {
         command_status: smpp.ESME_RTHROTTLED
       }))
     }
+
+    setTimeout(() => {
+      session.deliver_sm({})
+    }, 1000)
   })
 })
 

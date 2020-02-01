@@ -27,21 +27,26 @@ const config = {
   timeouts: {
     reconnect: '3000',
     reconnect_long: '5000',
-    ping: '8000',
+    ping: '3000',
     activity: '60000'
   },
   throttle: {
     count: '20',
     period: '60000'
-  }
+  },
+  webhook: 'http://localhost:3000/receive'
 }
 
 const esme = new ESME(config)
 
-esme.on('ready', async() => {
+esme.on('ready', async () => {
   await esme.sendMessage({
     destination: '111',
     content: 'hello',
+    report: {
+      ack: true,
+      intermediate: true
+    },
     udh: {
       port: {
         src: 37273,
