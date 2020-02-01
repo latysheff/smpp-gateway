@@ -40,9 +40,12 @@ const config = {
 const esme = new ESME(config)
 
 esme.on('ready', async () => {
+  console.log('ready, send message')
+
   await esme.sendMessage({
     destination: '111',
     content: 'hello',
+    encoding: 'ucs2',
     report: {
       ack: true,
       intermediate: true
@@ -54,6 +57,10 @@ esme.on('ready', async () => {
       }
     }
   })
+})
+
+esme.on('message', (pdu) => {
+  console.log('received', pdu)
 })
 
 app.use('/send', gateway(esme))

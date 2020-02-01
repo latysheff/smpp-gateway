@@ -1,6 +1,6 @@
 {
   "name": "smpp-gateway",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "SMPP ESME and HTTP gateway",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "name": "Vladimir Latyshev",
     "email": "latysheff@gmail.com"
   },
+  "repository": "https://github.com/latysheff/smpp-gateway.git",
   "license": "MIT",
   "dependencies": {
     "ajv": "^6.11.0",
@@ -20,12 +21,12 @@
     "limiter": "^1.1.4",
     "patch-package": "^6.1.2",
     "prom-client": "^11.5.3",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.8",
     "smpp": "0.3.1",
     "sms-3gpp": "0.0.5"
   },
   "devDependencies": {
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.8",
     "standard": "^14.3.0"
   }
 }

@@ -7,6 +7,9 @@ It also contains Express routers for HTTP to SMPP gateway and Prometheus metrics
 ## Usage example
 
 ```
+const express = require('express')
+const app = express()
+
 const { ESME, gateway, metrics } = require('smpp-gateway')
 const config = {} // see examples/client.js
 
