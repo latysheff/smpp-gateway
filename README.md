@@ -66,8 +66,3 @@ Environment variables for mock server:
   SMPP_THROTTLE_COUNT,
   SMPP_THROTTLE_PERIOD
 ```
-
-## SMPP module
-Module `smpp` is automatically patched during install to allow forced encoding.
-
-smpp/defs.js: `var encoding = value.encoding||encodings.detect(message);`

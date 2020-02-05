@@ -1,10 +1,9 @@
 {
   "name": "smpp-gateway",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "SMPP ESME and HTTP gateway",
   "main": "index.js",
   "scripts": {
-    "prepare": "patch-package",
     "test": "standard"
   },
   "author": {
@@ -19,10 +18,9 @@
     "debug": "^4.1.1",
     "express": "^4.17.1",
     "limiter": "^1.1.4",
-    "patch-package": "^6.1.2",
     "prom-client": "^11.5.3",
-    "smpp": "0.3.1",
-    "sms-3gpp": "0.0.5"
+    "smpp": "^0.4.0",
+    "sms-3gpp": "0.0.6"
   },
   "devDependencies": {
     "request": "^2.88.0",

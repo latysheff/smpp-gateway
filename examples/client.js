@@ -33,8 +33,7 @@ const config = {
   throttle: {
     count: '20',
     period: '60000'
-  },
-  webhook: 'http://localhost:3000/receive'
+  }
 }
 
 const esme = new ESME(config)
@@ -44,15 +43,14 @@ esme.on('ready', async () => {
 
   await esme.sendMessage({
     destination: '111',
-    content: 'hello',
-    encoding: 'ucs2',
+    content: '123456',
+    encoding: 'UCS2',
     report: {
       ack: true,
       intermediate: true
     },
     udh: {
       port: {
-        src: 37273,
         dst: 37273
       }
     }
